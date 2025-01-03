@@ -157,6 +157,21 @@ for pdf_file in os.listdir(pdf_dir):
 
         # Consolidate Store Data into a single cell
         store_table = pd.DataFrame({"Store Information": [store_table.iloc[0, 2]]})
+        # Print Store Information
+        print("Store Information:")
+        print(store_table)
+
+        # Print Itemized Purchase Data
+        print("\nItemized Purchase Data:")
+        print(df.drop(columns=["Page", "Line", "Text"], inplace=False))
+
+        # Print Purchase Data with Categories
+        print("\nPurchase Data with Categories:")
+        print(purchase_table.drop(columns=["Page", "Line", "Text"], inplace=False))
+
+        # Print Date Data
+        print("\nDate Data:")
+        print(date_data.drop(columns=["Page", "Line", "Text"], inplace=False))
 
         # Save to Excel with multiple sheets
         try:
