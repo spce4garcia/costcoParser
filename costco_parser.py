@@ -93,7 +93,7 @@ for pdf_file in os.listdir(pdf_dir):
                         # Annotate the image with the OCR text
                         draw.text((10, 10 + 15 * line_number), f"{line_number}: {cleaned_line}", fill="blue", font=font)
 
-                        if page_number == 1 and line_number <= 8:
+                        if page_number == 1 and line_number <= 8: #will need to revise section
                             store_data.append([page_number, line_number, cleaned_line])
                             continue
 
