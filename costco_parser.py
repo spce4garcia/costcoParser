@@ -173,7 +173,8 @@ for pdf_file in os.listdir(pdf_dir):
         print("\nDate Data:")
         print(date_data.drop(columns=["Page", "Line", "Text"], inplace=False))
 
-        # Save to Excel with multiple sheets
+        # Save to Excel with multiple sheets and other stuff
+    
         try:
             with pd.ExcelWriter(output_excel, engine="xlsxwriter") as writer:
                 store_table.to_excel(writer, index=False, sheet_name="Store Data")
