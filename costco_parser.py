@@ -174,7 +174,7 @@ for pdf_file in os.listdir(pdf_dir):
         print(date_data.drop(columns=["Page", "Line", "Text"], inplace=False))
 
         # Save to Excel with multiple sheets and other stuff
-    
+        # THe objective is to build out a database for the stuff being read
         try:
             with pd.ExcelWriter(output_excel, engine="xlsxwriter") as writer:
                 store_table.to_excel(writer, index=False, sheet_name="Store Data")
