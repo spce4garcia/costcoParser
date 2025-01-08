@@ -5,6 +5,10 @@ from pdf2image import convert_from_path
 import pandas as pd
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+import logging
+
+# Setup logging for debugging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Path to Tesseract executable
 pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
@@ -63,8 +67,9 @@ for pdf_file in os.listdir(pdf_dir):
         # Convert PDF to images
         try:
             images = convert_from_path(pdf_path, dpi=200)
+            logging.info(f"Successfully converted {pdf_file} to images")
         except Exception as e:
-            print(f"An error occurred while converting {pdf_file} to images: {e}")
+            logging.error(f"An error occurred while converting {pdf_file} to images: {e}")
             continue
 
         # Extract text data
@@ -84,16 +89,16 @@ for pdf_file in os.listdir(pdf_dir):
                 font = ImageFont.load_default()  # Default font for annotation
 
                 lines = pytesseract.image_to_string(processed_image, config="--oem 1 --psm 6").splitlines()
-                
+
                 for line_number, line in enumerate(lines, start=1):
                     if line.strip():
                         cleaned_line = fix_merged_text(line.strip())
-                        print(f"Page {page_number}, Line {line_number}: {cleaned_line}")  # Log OCR output
+                        logging.debug(f"Page {page_number}, Line {line_number}: {cleaned_line}")  # Log OCR output
 
                         # Annotate the image with the OCR text
                         draw.text((10, 10 + 15 * line_number), f"{line_number}: {cleaned_line}", fill="blue", font=font)
 
-                        if page_number == 1 and line_number <= 8: #will need to revise section
+                        if page_number == 1 and line_number <= 8:  # will need to revise section
                             store_data.append([page_number, line_number, cleaned_line])
                             continue
 
@@ -107,12 +112,11 @@ for pdf_file in os.listdir(pdf_dir):
                             purchase_data.append([page_number, line_number, cleaned_line])
                         else:
                             membership, sku, description, price, tax = parse_text(cleaned_line)
-                            
+
                             if price and float(price) < 0:
                                 sku = last_sku
                                 description = last_description
                                 tax = "Discount"
-                            
 
                             if price and float(price) >= 0:
                                 last_sku = sku
@@ -123,9 +127,9 @@ for pdf_file in os.listdir(pdf_dir):
                 # Save annotated image
                 annotated_image_path = os.path.join(annotated_pdf_dir, f"Page_{page_number}.png")
                 processed_image.save(annotated_image_path)
-                print(f"Annotated page saved as {annotated_image_path}")
+                logging.info(f"Annotated page saved as {annotated_image_path}")
             except Exception as e:
-                print(f"An error occurred while processing page {page_number} of {pdf_file}: {e}")
+                logging.error(f"An error occurred while processing page {page_number} of {pdf_file}: {e}")
 
         # Create DataFrames and Excel output as previously specified
         store_lines = [3, 4, 5]
@@ -157,24 +161,24 @@ for pdf_file in os.listdir(pdf_dir):
 
         # Consolidate Store Data into a single cell
         store_table = pd.DataFrame({"Store Information": [store_table.iloc[0, 2]]})
+
         # Print Store Information
-        print("Store Information:")
-        print(store_table)
+        logging.info("Store Information:")
+        logging.info(store_table)
 
         # Print Itemized Purchase Data
-        print("\nItemized Purchase Data:")
-        print(df.drop(columns=["Page", "Line", "Text"], inplace=False))
+        logging.info("\nItemized Purchase Data:")
+        logging.info(df.drop(columns=["Page", "Line", "Text"], inplace=False))
 
         # Print Purchase Data with Categories
-        print("\nPurchase Data with Categories:")
-        print(purchase_table.drop(columns=["Page", "Line", "Text"], inplace=False))
+        logging.info("\nPurchase Data with Categories:")
+        logging.info(purchase_table.drop(columns=["Page", "Line", "Text"], inplace=False))
 
         # Print Date Data
-        print("\nDate Data:")
-        print(date_data.drop(columns=["Page", "Line", "Text"], inplace=False))
+        logging.info("\nDate Data:")
+        logging.info(date_data.drop(columns=["Page", "Line", "Text"], inplace=False))
 
-        # Save to Excel with multiple sheets and other stuff
-        # THe objective is to build out a database for the stuff being read gonna try again soon
+        # Save to Excel with multiple sheets
         try:
             with pd.ExcelWriter(output_excel, engine="xlsxwriter") as writer:
                 store_table.to_excel(writer, index=False, sheet_name="Store Data")
@@ -187,7 +191,7 @@ for pdf_file in os.listdir(pdf_dir):
                 date_data.drop(columns=["Page", "Line", "Text"], inplace=False).to_excel(
                     writer, index=False, sheet_name="Date Data"
                 )
-            
-            print(f"Processed {pdf_file} and saved to {output_excel} with multiple sheets")
+
+            logging.info(f"Processed {pdf_file} and saved to {output_excel} with multiple sheets")
         except Exception as e:
-            print(f"An error occurred while saving {output_excel}: {e}")
+            logging.error(f"An error occurred while saving {output_excel}: {e}")
